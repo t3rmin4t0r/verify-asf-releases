@@ -1,0 +1,11 @@
+include storage-api.release
+include Makefile.general
+
+dep: orc
+
+orc: build 
+	cd build; (test -d orc || git clone --depth 1 https://github.com/apache/orc.git)
+	cd build/orc/java; mvn clean package -D$(PKG).version=$(VERSION)-rx$(RC)
+
+
+.PHONY: orc

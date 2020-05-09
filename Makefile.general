@@ -1,0 +1,35 @@
+all: dep
+
+
+$(PKG)-$(VERSION)-rc$(RC).tar.gz:
+	wget -c $(TAR_URL)/$(PKG)-$(VERSION)-rc$(RC).tar.gz
+	wget -c $(TAR_URL)/$(PKG)-$(VERSION)-rc$(RC).tar.gz.asc
+	wget -c $(TAR_URL)/$(PKG)-$(VERSION)-rc$(RC).tar.gz.sha256
+
+verify: $(PKG)-$(VERSION)-rc$(RC).tar.gz $(RM).asc 
+	sha256sum -c $(PKG)-$(VERSION)-rc$(RC).tar.gz.sha256 
+	gpg --verify $(PKG)-$(VERSION)-rc$(RC).tar.gz.asc
+
+build: verify build/$(PKG)-$(VERSION)/target/$(PKG)-*-$(VERSION)-rc$(RC).jar 
+
+build/$(PKG)-$(VERSION)/:
+	mkdir -p build;
+	cd build; tar -xzvf ../$(PKG)-$(VERSION)-rc$(RC).tar.gz
+
+build/$(PKG)-$(VERSION)/target/$(PKG)-*-$(VERSION)-rc$(RC).jar: build/$(PKG)-$(VERSION)/
+	mkdir -p build;
+	cd build; tar -xzvf ../$(PKG)-$(VERSION)-rc$(RC).tar.gz
+	# no RC here
+	cd build/$(PKG)-$(VERSION) && \
+	mvn package -DskipTests && \
+	mvn versions:set -DnewVersion=$(VERSION)-rc$(RC) && \
+	mvn clean package install 
+
+$(RM).asc: 
+	wget -c https://home.apache.org/keys/committer/$(RM).asc
+	gpg --import $(RM).asc
+
+clean:
+	@rm -rvf $(RM).asc $(PKG)-* build/ 
+
+.PHONY: build

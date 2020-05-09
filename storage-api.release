@@ -1,0 +1,5 @@
+RM=jcamacho
+PKG=hive-storage
+VERSION=2.7.2
+RC=1
+TAR_URL=http://home.apache.org/~$(RM)/$(PKG)-$(VERSION)
